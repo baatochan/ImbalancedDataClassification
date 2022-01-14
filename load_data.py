@@ -45,7 +45,13 @@ def load_data_from_file(filepath):
     # create a list with just class values for each case
     classes = []
     for item in data:
-        classes.append([item[-1]])
+        str = item[-1]
+        str = str.strip()
+        classes.append(str)
+
+    # remove whitespaces from the class names
+    #classes1 = list(filter(str.strip, classes))
+
 
     # create features array which has all columns but the last which was the class value
     features = np.delete(data, -1, axis=1)
