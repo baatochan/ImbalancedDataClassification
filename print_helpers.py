@@ -11,7 +11,12 @@ def printAllDatasets(datasets):
         print()
         i += 1
 
+
 def printClassImbalanceForAllDatasets(datasets):
     for dataset in datasets:
-        print(dataset[1].value_counts())
-        print()
+        printClassImbalanceForDataset(dataset)
+
+
+def printClassImbalanceForDataset(dataset):
+    print(dataset[1].value_counts())
+    print()
