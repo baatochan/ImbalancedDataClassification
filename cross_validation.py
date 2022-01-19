@@ -1,36 +1,54 @@
 from sklearn import metrics
-from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier, RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
 
 import balance_dataset
 import print_helpers
 
 
-# Function that trains selected classifier for train data and validates it with test data. Var classifier should be one
-# of ['adaboost', 'bagging', 'forest'] value.
-# Params: string, DataFrame, DataFrame, DataFrame, DataFrame, int/None
+# Function that trains selected classifier (setting the selected base_estimator) with the train data and validates it
+# with the test data. Var classifier should be one of ['adaboost', 'bagging', 'subspace'] value, base_est one of
+# ['none', 'decisionTree', # 'logisticRegression', 'gaussianNB'] values.
+# Params: string, string, DataFrame, DataFrame, DataFrame, DataFrame, int/None
 # Returns: float
-def train_model(classifier, X_train, Y_train, X_test, Y_test, random_state):
+def train_model(classifier, base_est, X_train, Y_train, X_test, Y_test, random_state):
+    match base_est:
+        case 'none':
+            est = None
+        case 'decisionTree':
+            est = DecisionTreeClassifier(criterion="entropy")
+        case 'logisticRegression':
+            est = LogisticRegression(max_iter=250)
+        case 'gaussianNB':
+            est = GaussianNB()
+
     match classifier:
         case 'adaboost':
-            clf = AdaBoostClassifier(n_estimators=50, learning_rate=1)
+            clf = AdaBoostClassifier(base_estimator=est, n_estimators=50, learning_rate=1)
         case 'bagging':
-            clf = BaggingClassifier(n_estimators=50, random_state=random_state)
-        case 'forest':
-            clf = RandomForestClassifier(n_estimators=50, random_state=random_state)
+            clf = BaggingClassifier(base_estimator=est, n_estimators=50, random_state=random_state)
+        case 'subspace':
+            # clf = RandomSubspaceClassifier()
+            halfOfFeatures = int(len(X_train.columns)/2)  # int() to round it down
+            clf = BaggingClassifier(base_estimator=est, n_estimators=50, random_state=random_state, bootstrap=False, max_features=halfOfFeatures)
+
     model = clf.fit(X_train, Y_train.values.ravel())
     Y_pred = model.predict(X_test)
 
     return metrics.f1_score(Y_test, Y_pred, pos_label='positive')
 
 
-# Function that does n time repeated k-fold cross validation of selected Classifier. Var classifier should be one of
-# ['adaboost', 'bagging', 'forest'] value, k is represented by n_splits, n is represented by n_repeats, random_state
-# is used to ensure that every run data is split in the same way each run the random_state is the same. Random_state
-# can be set to None for random run. Function returns a list of F1 scores.
-# Params: string, DataFrame, DataFrame, int, int, int/None
+# Function that does n time repeated k-fold cross validation of selected classifier with selected base_estimator. Var
+# classifier should be one of ['adaboost', 'bagging', 'subspace'] value, base_est one of ['none', 'decisionTree',
+# 'logisticRegression', 'gaussianNB'] values, k is represented by n_splits, n is represented by n_repeats,
+# random_state is used to ensure that every run data is split in the same way each run the random_state is the same.
+# Random_state can be set to None for random run. Function returns a list of F1 scores.
+# Params: string, string, DataFrame, DataFrame, int, int, int/None
 # Returns: List
-def run_crossvalid(classifier, X_features, Y_class, n_splits, n_repeats, random_state):
+def run_crossvalid(classifier, base_est, X_features, Y_class, n_splits, n_repeats, random_state):
     scores = []
 
     split_algorithm = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
@@ -43,28 +61,29 @@ def run_crossvalid(classifier, X_features, Y_class, n_splits, n_repeats, random_
 
         oversampled_X, oversampled_Y = balance_dataset.balance_dataset(X_train, Y_train, random_state)
 
-        f1Score = train_model(classifier, oversampled_X, oversampled_Y, X_test, Y_test, random_state)
+        f1Score = train_model(classifier, base_est, oversampled_X, oversampled_Y, X_test, Y_test, random_state)
 
         scores.append(f1Score)
 
     return scores
 
 
-# Function that runs n time repeated k-fold cross validation for every Classifier. K is represented by n_splits,
+# Function that runs n time repeated k-fold cross validation for every classifier. K is represented by n_splits,
 # n is represented by n_repeats, random_state is used to ensure that every run data is split in the same way each run
 # the random_state is the same. Random_state can be set to None for random run. Function returns a list of F1 scores.
 # Params: DataFrame, DataFrame, int, int, int/None
 # Returns: Dictionary
 def run_every_crossvalid(X_features, Y_class, n_splits, n_repeats, random_state):
     scores = {}
-    for classifier in ['adaboost', 'bagging', 'forest']:
-        scoreArray = run_crossvalid(classifier, X_features, Y_class, n_splits, n_repeats, random_state)
-        scores[classifier] = scoreArray
+    for classifier in ['adaboost', 'bagging', 'subspace']:
+        for base_est in ['none', 'decisionTree', 'logisticRegression', 'gaussianNB']:
+            scoreArray = run_crossvalid(classifier, base_est, X_features, Y_class, n_splits, n_repeats, random_state)
+            scores[classifier + ' ' + base_est] = scoreArray
 
     return scores
 
 
-# Function that runs n time repeated k-fold cross validation for every Classifier for all provided datasets. K is
+# Function that runs n time repeated k-fold cross validation for every classifier for all provided datasets. K is
 # represented by n_splits, n is represented by n_repeats, random_state is used to ensure that every run data is split
 # in the same way each run the random_state is the same. Random_state can be set to None for random run. Function
 # prints the results for every trained model.
