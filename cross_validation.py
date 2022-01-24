@@ -21,7 +21,7 @@ def train_model(classifier, base_est, X_train, Y_train, X_test, Y_test, random_s
         case 'decisionTree':
             est = DecisionTreeClassifier(criterion="entropy")
         case 'logisticRegression':
-            est = LogisticRegression(max_iter=250)
+            est = LogisticRegression(max_iter=600)
         case 'gaussianNB':
             est = GaussianNB()
 
