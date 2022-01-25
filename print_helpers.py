@@ -1,17 +1,24 @@
-# Function that takes a list of loaded datasets (in the form of List(DataFrame, DataFrame)) and prints all dfs.
-# Params: List(DataFrame, DataFrame)
-# Returns: None
 from statistics import mean
 
 
+# Function that takes name of dataset, dataframe with features and dataset with classes and prints it
+# Params: String/Int, DataFrame, DataFrame
+# Returns: None
+def printDataset(name, features, classes):
+    print("#### DATASET " + str(name) + " ####")
+    print(features)
+    print()
+    print(classes)
+    print()
+
+
+# Function that takes a list of loaded datasets (in the form of List(DataFrame, DataFrame)) and prints all dfs.
+# Params: List(DataFrame, DataFrame)
+# Returns: None
 def printAllDatasets(datasets):
     i = 1
     for dataset in datasets:
-        print("#### DATASET " + str(i) + " ####")
-        print(dataset[0])
-        print()
-        print(dataset[1])
-        print()
+        printDataset(i, dataset[0], dataset[1])
         i += 1
 
 

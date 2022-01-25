@@ -11,17 +11,15 @@ import print_helpers
 
 # Function that trains selected classifier (setting the selected base_estimator) with the train data and validates it
 # with the test data. Var classifier should be one of ['adaboost', 'bagging', 'subspace'] value, base_est one of
-# ['none', 'decisionTree', # 'logisticRegression', 'gaussianNB'] values.
+# ['decisionTree', 'logisticRegression', 'gaussianNB'] values.
 # Params: string, string, DataFrame, DataFrame, DataFrame, DataFrame, int/None
 # Returns: float
 def train_model(classifier, base_est, X_train, Y_train, X_test, Y_test, random_state):
     match base_est:
-        case 'none':
-            est = None
         case 'decisionTree':
             est = DecisionTreeClassifier(criterion="entropy")
         case 'logisticRegression':
-            est = LogisticRegression(max_iter=600)
+            est = LogisticRegression(max_iter=3500)
         case 'gaussianNB':
             est = GaussianNB()
 
@@ -42,7 +40,7 @@ def train_model(classifier, base_est, X_train, Y_train, X_test, Y_test, random_s
 
 
 # Function that does n time repeated k-fold cross validation of selected classifier with selected base_estimator. Var
-# classifier should be one of ['adaboost', 'bagging', 'subspace'] value, base_est one of ['none', 'decisionTree',
+# classifier should be one of ['adaboost', 'bagging', 'subspace'] value, base_est one of ['decisionTree',
 # 'logisticRegression', 'gaussianNB'] values, k is represented by n_splits, n is represented by n_repeats,
 # random_state is used to ensure that every run data is split in the same way each run the random_state is the same.
 # Random_state can be set to None for random run. Function returns a list of F1 scores.
@@ -76,7 +74,7 @@ def run_crossvalid(classifier, base_est, X_features, Y_class, n_splits, n_repeat
 def run_every_crossvalid(X_features, Y_class, n_splits, n_repeats, random_state):
     scores = {}
     for classifier in ['adaboost', 'bagging', 'subspace']:
-        for base_est in ['none', 'decisionTree', 'logisticRegression', 'gaussianNB']:
+        for base_est in ['decisionTree', 'logisticRegression', 'gaussianNB']:
             scoreArray = run_crossvalid(classifier, base_est, X_features, Y_class, n_splits, n_repeats, random_state)
             scores[classifier + ' ' + base_est] = scoreArray
 

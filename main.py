@@ -14,12 +14,15 @@ datasets = load_data.load_data_from_files(data_dir)
 # print_helpers.printClassImbalanceForAllDatasets(datasets)
 
 # balance the first dataset and print distribution of class to confirm that the set is balanced
-# balancedDataset = balance_dataset.balance_dataset(datasets[0][0], datasets[0][1], random_state)
+# set = 18
+# print_helpers.printDataset(set, datasets[set][0], datasets[set][1])
+# balancedDataset = balance_dataset.balance_dataset(datasets[set][0], datasets[set][1], random_state)
 # print_helpers.printClassImbalanceForDataset(balancedDataset)
 
 # run each of crossvalid function as 5 times reapeted 2-fold cross validation and print the results for 2nd dataset
-# scores = cross_validation.run_every_crossvalid(datasets[1][0], datasets[1][1], 2, 5, random_state)
-# print_helpers.printAlgoResults("2", scores)
+# set = 18
+# scores = cross_validation.run_every_crossvalid(datasets[set][0], datasets[set][1], 2, 1, random_state)
+# print_helpers.printAlgoResults(set, scores)
 
 # run every crossvalid as 5 times reapeted 2-fold cross validation and print the results for all datasets
 cross_validation.run_every_crossvalid_for_every_dataset(datasets, 2, 5, random_state)
