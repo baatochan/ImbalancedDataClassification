@@ -76,7 +76,7 @@ def run_every_crossvalid(X_features, Y_class, n_splits, n_repeats, random_state)
     for classifier in ['adaboost', 'bagging', 'subspace']:
         for base_est in ['decisionTree', 'logisticRegression', 'gaussianNB']:
             scoreArray = run_crossvalid(classifier, base_est, X_features, Y_class, n_splits, n_repeats, random_state)
-            scores[classifier + ' ' + base_est] = scoreArray
+            scores[classifier + '-' + base_est] = scoreArray
 
     return scores
 
@@ -84,12 +84,21 @@ def run_every_crossvalid(X_features, Y_class, n_splits, n_repeats, random_state)
 # Function that runs n time repeated k-fold cross validation for every classifier for all provided datasets. K is
 # represented by n_splits, n is represented by n_repeats, random_state is used to ensure that every run data is split
 # in the same way each run the random_state is the same. Random_state can be set to None for random run. Function
-# prints the results for every trained model.
+# prints the results for every trained model. Returning dictionary has keys indicating names of classifiers and entry
+# is 2d array of size numberOfDatasets x numberOfCrossvalidRepeats
 # Params: List(DataFrame, DataFrame), int, int, int/None
-# Returns: None
+# Returns: Dictionary(Array2D)
 def run_every_crossvalid_for_every_dataset(datasets, n_splits, n_repeats, random_state):
+    scores = {}
     i = 1
     for dataset in datasets:
-        score = run_every_crossvalid(dataset[0], dataset[1], n_splits, n_repeats, random_state)
-        print_helpers.printAlgoResults(i, score)
+        crossvalidScore = run_every_crossvalid(dataset[0], dataset[1], n_splits, n_repeats, random_state)
+        # print_helpers.printAlgoResults(i, score)
+        for algo, score in crossvalidScore.items():
+            if algo in scores:
+                scores[algo].append(score)
+            else:
+                scores[algo] = [score]
+                # score is inside [] to indicate it is a list containing one element - score (which itself is a list)
         i += 1
+    return scores

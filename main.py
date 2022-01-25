@@ -1,3 +1,5 @@
+import numpy as np
+
 import balance_dataset
 import cross_validation
 import load_data
@@ -13,16 +15,22 @@ datasets = load_data.load_data_from_files(data_dir)
 # print_helpers.printAllDatasets(datasets)
 # print_helpers.printClassImbalanceForAllDatasets(datasets)
 
-# balance the first dataset and print distribution of class to confirm that the set is balanced
+# balance the Xth dataset and print distribution of class to confirm that the set is balanced
 # set = 18
 # print_helpers.printDataset(set, datasets[set][0], datasets[set][1])
 # balancedDataset = balance_dataset.balance_dataset(datasets[set][0], datasets[set][1], random_state)
 # print_helpers.printClassImbalanceForDataset(balancedDataset)
 
-# run each of crossvalid function as 5 times reapeted 2-fold cross validation and print the results for 2nd dataset
+# run each of crossvalid function as 5 times repeated 2-fold cross validation and print the results for Xth dataset
 # set = 18
 # scores = cross_validation.run_every_crossvalid(datasets[set][0], datasets[set][1], 2, 1, random_state)
 # print_helpers.printAlgoResults(set, scores)
 
-# run every crossvalid as 5 times reapeted 2-fold cross validation and print the results for all datasets
-cross_validation.run_every_crossvalid_for_every_dataset(datasets, 2, 5, random_state)
+# load saved results from classifiers analysis or run classifiers analysis if file is not present and save results
+try:
+    results = np.load('results.npy', allow_pickle=True)
+    # print("\nScores:\n", results)
+except FileNotFoundError:
+    # run every crossvalid as 5 times repeated 2-fold cross validation and print the results for all datasets
+    results = cross_validation.run_every_crossvalid_for_every_dataset(datasets, 2, 5, random_state)
+    np.save('results', results)
