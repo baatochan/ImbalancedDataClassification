@@ -36,4 +36,6 @@ except FileNotFoundError:
     results = cross_validation.run_every_crossvalid_for_every_dataset(datasets, 2, 5, random_state)
     np.save('results', results)
 
-statistical_analysis.calculate_analysis(results.item()) # item() is needed to properly load a dict using np
+statistical_analysis.calculate_global_wilcoxon_analysis(results.item()) # item() is needed to properly load a dict using np
+
+statistical_analysis.calculate_tstudent_analysis_for_all_datasets(results.item()) # item() is needed to properly load a dict using np
