@@ -34,6 +34,7 @@ def printClassImbalanceForAllDatasets(datasets):
 # Params: (DataFrame, DataFrame)
 # Returns: None
 def printClassImbalanceForDataset(dataset):
+    # print(dataset[1].value_counts().idxmin()[0]) #  name of class which is in minority
     print(dataset[1].value_counts())
     print()
 
