@@ -31,11 +31,12 @@ datasets = load_data.load_data_from_files(data_dir)
 try:
     results = np.load('results.npy', allow_pickle=True)
     # print("\nScores:\n", results)
+    results = results.item()  # item() is needed to properly load a dict using np
 except FileNotFoundError:
     # run every crossvalid as 5 times repeated 2-fold cross validation and print the results for all datasets
     results = cross_validation.run_every_crossvalid_for_every_dataset(datasets, 2, 5, random_state)
     np.save('results', results)
 
-statistical_analysis.calculate_global_wilcoxon_analysis_with_basesplit(results.item()) # item() is needed to properly load a dict using np
+statistical_analysis.calculate_global_wilcoxon_analysis_with_basesplit(results) # item() is needed to properly load a dict using np
 
-statistical_analysis.calculate_tstudent_analysis_for_all_datasets_with_basesplit(results.item()) # item() is needed to properly load a dict using np
+statistical_analysis.calculate_tstudent_analysis_for_all_datasets_with_basesplit(results) # item() is needed to properly load a dict using np
