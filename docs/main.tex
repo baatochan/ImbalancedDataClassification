@@ -1,0 +1,409 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{amsmath}
+\usepackage[utf8]{inputenc}
+\usepackage{polski}
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm]{geometry}
+\usepackage{minted}
+\usepackage{graphicx}
+\usepackage{dirtytalk}
+\usepackage[T1]{fontenc}
+\usepackage{beramono}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{float}
+\usepackage{indentfirst}
+\usepackage{cite}
+
+\begin{document}
+\pagestyle{plain}
+\input{titlePage.tex}
+
+
+\section{Wstęp}
+\subsection{Zadanie klasyfikacji}
+Zadanie rozpoznawania wzorców, inaczej klasyfikacja polega na przypisaniu danego obiektu do określonych kategorii. Podział na kategorie (klasy) dokonywany jest na podstawie wartości wybranych cech określających obiekt będący klasyfikowanym\cite{def_klasyfikacja}. W ramach tego projektu badana jest klasyfikacja binarna, co oznacza że istnieją tylko dwie kategorie do których obiekt może być sklasyfikowany.
+\subsection{Dane niezbalansowane}
+Mianem danych niezbalansowanych w kontekście klasyfikacji określa się zbiory w których wystąpień pewnej klasy jest znacznie mniej niż wystąpień innej klasy \cite{def_niezbalansowana}. Dla zadania klasyfikacji binarnej, która jest przedmiotem prowadzonych badań niezbalansowanie zbioru można określić jako iloraz liczby wystąpień klasy większościowej i liczby wystąpień klasy mniejszościowej. Przykładowo w pewnym zbiorze liczba próbek klasy większościowej to 100, a liczba próbek klasy mniejszościowej to 50. Iloczyn tych wartości, a za razem niezbalansowanie zbioru to 2,0. 
+\subsection{Metody zespołowe}
+Na metodę zespołową (ensemble) składa się zbiór klasyfikatorów bazowych, których predykcje są łączone w celu dokonania zadania klasyfikacji. Według wielu badań użycie metod zespołowych pozwala osiągnąć większą dokładność niż w przypadku pojedynczego klasyfikatora\cite{ensemble}. Wyróżniamy metody zespołowe homogeniczne i heterogeniczne. W metodach homogenicznych wszystkie klasyfikatory wchodzące w skład zespołu są generowane za pomocą tego samego typu klasyfikatora, natomiast w heterogenicznych, używane są różne typy klasyfikatorów. W tej pracy badano jedynie klasyfikatory homogeniczne. 
+
+\newpage
+\section{Cel i plan eksperymentu}
+\subsection{Cel eksperymentu}
+Celem eksperymentu jest zbadanie i porównanie skuteczności wybranych metod zespołowych w zadaniu klasyfikacji binarnej przeprowadzanym na zbiorze danych niezbalansowanych.
+\subsection{Plan eksperymentu}
+Każdy z badanych zbiorów zostanie podzielony w ramach 5-cio krotnej podwójnej stratyfikowanej walidacji krzyżowej. Zbiory dzielone są w taki sam sposób dla każdej z badanych metod, aby można było je później porównać. Po podzieleniu zbiory uczące zostaną następnie zbalansowane algorytmem SMOTE\cite{smote}, który wykorzystuje oversampling. W odróżnieniu od klasycznego oversamplingu metoda SMOTE nie duplikuje obiektów klasy mniejszościowej, a tworzy nowe obiekty, podobne do znanych wystąpień klasy mniejszościowej. Zbiory testowe nie będą oversamplowane.
+
+Badane metody zespołowe to kolejno:
+AdaBoostClassifier, BaggingClassifier oraz RandomSubspaceClassifier. Każda z powyższych metod zespołowych będzie składać się z wielu instancji tych samych klasyfikatorów bazowych. Do tego celu zostaną wykorzystane klasyfikatory: decisionTree, logisticRegression i gaussianNB. Implementacja wybranych metod zespołowych oraz klasyfikatorów zostanie zaczerpnięta z biblioteki scikit-learn\cite{scikit}. Dla każdego z badanych zbiorów danych planujemy użyć każdej z powyższych metod zespołowych.
+
+W celu zmierzenia skuteczności różnych metod zostanie wykorzystana metryka F1\cite{f1}. Jest to średnia harmoniczna dwóch parametrów:
+\begin{itemize}
+    \item precyzji, czyli jak dobrze dana klasa jest poprawnie klasyfikowana pośród wszystkich obiektów tej klasy w zbiorze testowym,
+    \item recall, czyli jak dobrze dana klasa jest poprawnie klasyfikowana pośród wszystkich obiektów sklasyfikowanych jako ta klasa.
+\end{itemize}
+Oczywiście metryka F1 będzie mierzyła jakość klasyfikacji obiektów klasy mniejszościowej. Szukając informacji na temat metryki F1 można natknąć się na informacje, że metryka ta nie jest dobra do porównywania klasyfikatorów, gdyż w zależności od badanego zbioru któryś z dwóch parametrów wchodzących w skład F1 może okazać się ważniejszy. Jednakże w badanych zbiorach nie określono, który z parametrów lepiej mierzyłby skuteczność klasyfikacji, dlatego postanowiono na metrykę F1, aby jednocześnie brać pod uwagę oba parametry.
+
+Kolejnym krokiem będzie wykonanie parowych testów statystycznych. Każda z trzech metod zespołowych zostanie zestawiona z pozostałymi w ramach jednego klasyfikatora bazowego. Zostaną wykonane testy t-Studenta w celu uzyskania statystycznych różnic między metodami zespołowymi dla każdego zbioru danych. Dodatkowo na podstawie uśrednionej oceny ze wszystkich zbiorów zostanie przeprowadzony test Wilcoxona, na podstawie którego będzie można stwierdzić przewagę metod nad innymi dla ogółu badanych zbiorów. Dla obu testów statystycznych został przyjęty próg ufności na poziomie 0,05.
+
+\subsection{Wykorzystane zbiory danych}
+Eksperymenty zostały przeprowadzone dla 20 zbiorów. Dane  pochodzą  ze  strony  KEEL-dataset repository\cite{keel}. Wykorzystane zbiory zostały zaprezentowane w tabeli \ref{tab:sets}. Dla każdego ze zbiorów określono liczebność oraz miarę niezbalansowania. Niezbalansowanie badanych zbiorów waha się w przedziale od 1,82 do 32,73, ze średnim niezbalansowaniem wynoszącym 10,05.
+\begin{table}[h]
+    \begin{center}
+    \caption{Wykorzystane zbiory}
+    \label{tab:sets}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    l.p. & nazwa zbioru & liczebność & liczba atrybutów & niezbalansowanie \\
+    \hline
+    \hline
+    1 & ecoli1 & 336 & 7 & 3.36 \\
+    \hline
+    2 & glass0 & 214 & 9 & 2.06 \\
+    \hline
+    3 & glass1 & 214 & 9 & 1.82 \\
+    \hline
+    4 & glass4 & 214 & 9 & 15.47 \\
+    \hline
+    5 & glass6 & 214 & 9 & 6.38 \\
+    \hline
+    6 & haberman & 306 & 3 & 2.78 \\
+    \hline
+    7 & iris0  & 150 & 4 & 2 \\
+    \hline
+    8 & new-thyroid1 & 215 & 5 & 5.14 \\
+    \hline
+    9 & page-blocks-1-3\_vs\_4 & 472 & 10 & 15.86 \\
+    \hline
+    10 & pima & 768 & 8 & 1.87 \\
+    \hline
+    11 & segment0 & 2308 & 19 & 6.02 \\
+    \hline
+    12 & vehicle0 & 846 & 18 & 3.25 \\
+    \hline
+    13 & vehicle3 & 846 & 18 & 2.99 \\
+    \hline
+    14 & vowel0 & 988 & 13 & 9.98 \\
+    \hline
+    15 & winequality-red-4 & 1599 & 11 & 29.17 \\
+    \hline
+    16 & wisconsin & 683 & 9 & 1.86 \\
+    \hline
+    17 & yeast-1-4-5-8\_vs\_7 & 693 & 8 & 22.1 \\
+    \hline
+    18 & yeast3 & 1484 & 8 & 8.1 \\
+    \hline
+    19 & yeast4 & 1484 & 8 & 28.1 \\
+    \hline
+    20 & yeast5 & 1484 & 8 & 32.73 \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{table}
+
+\newpage
+\section{Opis środowiska testowego}
+Podczas realizacji projektu został wykorzystany edytor tekstowy Atom\cite{atom} oraz język skryptowy Python\cite{python3} w wersji 3.10.  Kod źródłowy został podzielony na oddzielne pliki aby łatwo oddzielić fragmenty kodu odpowiedzialne za różne zadania.
+
+W projekcie zostały wykorzystane następujące biblioteki:
+\begin{itemize}
+    \item scikit--learn\cite{scikit} -- do implementacji selekcji oraz klasyfikacji danych,
+    \item imblearn\cite{imblearn} -- do balansowania danych za pomocą algorytmu SMOTE,
+    \item scipy\cite{scipy} -- do przeprowadzenia testów t-Studenta i Wilcoxona,
+    \item numpy\cite{numpy} -- do ładowania i operacji na danych i wynikach,
+    \item pandas\cite{pandas} -- do przekształcania danych,
+    \item tabulate\cite{tabulate} -- do prezentacji wyników w konsoli.
+\end{itemize}
+
+Klasyfikator RandomSubspaceClassifier został utworzony za pomocą modyfikacji implementacji klasyfikatora BaggingClassifier.
+Parametry użytych w pracy implementacji metod zespołowych są następujące:
+\begin{itemize}
+    \item AdaBoostClassifier -- n\_estimators = 50, learning\_rate = 1.0
+    \item BaggingClassfier -- n\_estimators = 50, random\_state = const
+    \item RandomSubspaceClassifier --n\_estimators = 50, random\_state = const,\\ bootstrap = False, max\_features = 1/2 liczby cech w zbiorze.
+\end{itemize}
+
+\newpage
+\section{Wyniki i wnioski}
+Wyniki zostały przedstawione w trzech tabelach, każda tabela odpowiada jednemu rodzajowi klasyfikatora bazowego. W tabeli \ref{tab:resultsDT} przedstawiono wyniki uzyskane dla klasyfikatora bazowego decisionTree, w tabeli \ref{tab:resultsLR} zawarto wyniki klasyfikacji przy użyciu bazowego klasyfikatora logisticRegresion, a w tabeli \ref{tab:resultsNB} znajdują się wyniki klasyfikacji klasyfikatora bazowego gaussianNB. Wiersze tych tabeli reprezentują poszczególne zbiory danych, natomiast kolumny to metody zespołowe. W komórkach przedstawiono wynik F1 klasyfikacji oraz informację od których metod zespołowych zawartych w tabeli dana metoda jest statystycznie znacząco lepsza. Informacja o przewadze metody nad inną została uzyskana za pomocą testu t-Studenta. W ostatnim wierszu przedstawiono średnią rangę osiągniętą przez metodę zespołową dla wszystkich zbiorów oraz informację od których metod zespołowych dana metoda jest średnio statystycznie znacząco lepsza. Średnia przewaga metod została wyznaczona za pomocą testu Wilcoxona.
+
+Pierwszym badanym klasyfikatorem bazowym dla którego badano metody zespołowe było drzewo decyzyjne (decisionTree). Metoda AdaBoost dla trzech zbiorów okazała się statystycznie znacząco gorsza od metody RandomSubspace. Bagging zyskał statystycznie znaczącą przewagę nad AdaBoost w połowie badanych przypadków, oraz okazał się być lepszy od RandomSubspace w 7 przypadkach. RandomSubspace był lepszy od AdaBoost dla siedmiu zbiorów i lepszy od Baggingu w 4 przypadkach. Ogólnie ujmując spośród tych trzech metod, Bagging okazał się lepszy od metody AdaBoost. Choć wystąpiły różnice pomiędzy pozostałymi parami metod, nie okazały się one znaczące.
+
+Podczas badania bazowego klasyfikatora logisticRegresion, wykazano że dla trzech przypadków metoda AdaBoost daje wyniki lepsze od RandomSubspace. Bagging okazał się lepszy od AdaBoost dla 7 przypadków i lepszy od RadomSubspace również w 7 przypadkach. Metoda RandomSubspace była lepsza od AdaBoost dla 7 przypadków oraz lepsza od Baggingu w przypadku dwóch zbiorów. Patrząc na całość, podobnie jak dla drzewa decyzyjnego, metoda Baggingu okazała się lepsza od AdaBoost. Metoda RandomSubspace dla badanych zbiorów także okazała się średnio statystycznie lepsza od AdaBoost.
+
+Bazowy klasyfikator gaussianNB był ostatnim klasyfikatorem pod kątem którego badano skuteczność metod zespołowych. Metoda AdaBoost okazała się lepsza od Baggingu i metody RandomSubspace w przypadku 4 zbiorów(tych samych). Bagging wykazał przewagę nad AdaBoost w przypadku 7 zbiorów i przewagę nad RandomSubspace w przypadku 3 zbiorów. Metoda RandomSubspace wykazała się przewagą nad AdaBoost w 7 przypadkach, oraz przewagą nad Baggingiem dla jednego zbioru. Dla naiwnego klasyfikatora bayesowskiego, żadna spośród trzech badanych metod zespołowych nie wykazała statystycznie znaczącej przewagi nad pozostałymi.
+
+Można także zauważyć, że skuteczność klasyfikacji mierzona miarą F1 w zbiorach zbiorach winequality-red-4 oraz yeast-1-4-5-8\_vs\_7 odbiega od skuteczności klasyfikacji innych zbiorów, niezależnie od użytych metod zespołowych i klasyfikatorów bazowych. Być może wynika to ze specyfiki danych tych dwóch zbiorów - obiekty przypisywane do obu klas mogły mieć podobne wartości atrybutów, przez co metoda SMOTE przy oversamplingu zbioru mniejszościowego tworzyła obiekty o wartościach atrybutów zbyt bliskich do tych posiadanych przez obiekty klasy większościowej. Oczywiście taką hipotezę należałoby zbadać.
+
+Z kolei skuteczność klasyfikacji dla zbioru danych iris0, dla wszystkich badanych przypadków z wyjątkiem połączenia metody AdaBoost z klasyfikatorem logisticRegression, była możliwie najlepsza -- wszystkie obiekty z klasy mniejszościowej zostały poprawnie zakwalifikowane.
+
+
+\newpage
+\begin{table}[H]
+    \begin{center}
+    \caption{Wyniki -- klasyfikator bazowy decisionTree}
+    \label{tab:resultsDT}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    & AdaBoost -- 1 & Bagging -- 2 & RandomSubspace -- 3 \\
+    zbiór danych & & &\\
+    \hline
+    \hline
+    ecoli1 & 0.759 & 0.778 & 0.682\\
+	& 3 & 3 & --- \\
+    \hline
+    glass0 & 0.679 & 0.737 & 0.743\\
+	& --- & 1 & 1 \\
+    \hline
+    glass1 & 0.653 & 0.715 & 0.725 \\
+	& --- & --- & 1 \\
+    \hline
+    glass4 & 0.595 & 0.586 & 0.724 \\
+	& --- & --- & 2 \\
+    \hline
+    glass6 & 0.791 & 0.841 & 0.851 \\
+	& --- & 1 & 1 \\
+    \hline
+    haberman & 0.415 & 0.409 & 0.203\\
+	& 3 & 3 & --- \\
+    \hline
+    iris0 & 1.000 & 1.000 & 1.000\\
+	& --- & --- & --- \\
+    \hline
+    new-thyroid1 & 0.937 & 0.927 & 0.924\\
+	& --- & --- & --- \\
+    \hline
+    page-blocks-1-3\_vs\_4 & 0.939 & 0.939 & 0.938 \\
+	& --- & --- & --- \\
+    \hline
+    pima & 0.586 & 0.645 & 0.611 \\
+	& --- & 1,3 & 1 \\
+    \hline
+    segment0 & 0.976 & 0.981 & 0.986 \\
+	& --- & --- & 1,2 \\
+    \hline
+    vehicle0 & 0.861 & 0.901 & 0.921 \\
+	& --- & 1 & 1,2 \\
+    \hline
+    vehicle3 & 0.511 & 0.571 & 0.537 \\
+	& --- & 1,3 & --- \\
+    \hline
+    vowel0 & 0.893 & 0.915 & 0.957 \\
+	& --- & --- & 1,2 \\
+    \hline
+    winequality-red-4 & 0.105 & 0.129 & 0.110 \\
+	& --- & --- & --- \\
+    \hline
+    wisconsin & 0.922 & 0.944 & 0.957 \\
+	& --- & 1 & 1,2 \\
+    \hline
+    yeast-1-4-5-8\_vs\_7 & 0.095 & 0.104 & 0.054 \\
+	& --- & --- & --- \\
+    \hline
+    yeast3 & 0.713 & 0.762 & 0.491 \\
+	& 3 & 1,3 & --- \\
+    \hline
+    yeast4 & 0.277 & 0.357 & 0.238 \\
+	& --- & 1,3 & --- \\
+    \hline
+    yeast5 & 0.647 & 0.711 & 0.598 \\
+	& --- & 1,3 & --- \\
+    \hline
+    \hline
+    średnia ranga & 1.65 & 2.35 & 2 \\
+    & --- & 1 & --- \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{table}
+
+\newpage
+\begin{table}[H]
+    \begin{center}
+    \caption{Wyniki -- klasyfikator bazowy logisticRegression}
+    \label{tab:resultsLR}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    & AdaBoost -- 1 & Bagging -- 2 & RandomSubspace -- 3 \\
+    zbiór danych & & &\\
+    \hline
+    \hline
+    ecoli1 & 0.753 & 0.750 & 0.753 \\
+	& --- & --- & --- \\
+    \hline
+    glass0 & 0.654 & 0.642 & 0.657 \\
+	& --- & --- & --- \\
+    \hline
+    glass1 & 0.542 & 0.568 & 0.548 \\
+	& --- & 1,3 & --- \\
+    \hline
+    glass4 & 0.591 & 0.593 & 0.602 \\
+	& --- & --- & --- \\
+    \hline
+    glass6 & 0.788 & 0.798 & 0.827\\
+	& --- & --- & 1 \\
+    \hline
+    haberman & 0.466 & 0.480 &  0.476\\
+	& --- & --- & --- \\
+    \hline
+    iris0  & 0.990 & 1.000 & 1.000 \\
+	& --- & 1 & 1 \\
+    \hline
+    new-thyroid1 & 0.902 & 0.935 & 0.964 \\
+	& --- & --- & --- \\
+    \hline
+    page-blocks-1-3\_vs\_4 & 0.714 & 0.761 & 0.570  \\
+	& 3 & 3 & --- \\
+    \hline
+    pima & 0.656 & 0.661 & 0.656 \\
+	& --- & --- & --- \\
+    \hline
+    segment0 & 0.985 & 0.988 & 0.991 \\
+	& --- & --- & 1,2 \\
+    \hline
+    vehicle0 & 0.933 & 0.934 & 0.916 \\
+	& 3 & 3 & --- \\
+    \hline
+    vehicle3 & 0.613 & 0.616 & 0.580\\
+	& --- & 3 & --- \\
+    \hline
+    vowel0 & 0.720 & 0.759 & 0.657 \\
+	& 3 & 1,3 & --- \\
+    \hline
+    winequality-red-4 & 0.117 & 0.136 & 0.136 \\
+	& --- & 1 & 1 \\
+    \hline
+    wisconsin & 0.940 & 0.948 & 0.959 \\
+	& --- & 1 & 1,2 \\
+    \hline
+    yeast-1-4-5-8\_vs\_7 & 0.133 & 0.136 & 0.136 \\
+	& --- & --- & --- \\
+    \hline
+    yeast3 & 0.605 & 0.673 & 0.658 \\
+	& --- & 1,3 & 1 \\
+    \hline
+    yeast4 & 0.283 & 0.277 & 0.281 \\
+	& --- & --- & --- \\
+    \hline
+    yeast5 & 0.423 & 0.457 & 0.449 \\
+	& --- & 1,3 & 1 \\
+    \hline
+    \hline
+    średnia ranga & 1.45 & 2.325 & 2.225 \\
+    & --- & 1 & 1 \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{table}
+
+\newpage
+\begin{table}[H]
+    \begin{center}
+    \caption{Wyniki -- klasyfikator bazowy gaussianNB}
+    \label{tab:resultsNB}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    & AdaBoost -- 1 & Bagging -- 2 & RandomSubspace -- 3 \\
+    zbiór danych & & &\\
+    \hline
+    \hline
+    ecoli1 & 0.432  & 0.601 & 0.572 \\
+	& --- & --- & --- \\
+    \hline
+    glass0 & 0.368 & 0.609 & 0.609\\
+	& --- & 1 & 1 \\
+    \hline
+    glass1 & 0.482 & 0.602 & 0.602 \\
+	& --- & 1 & 1 \\
+    \hline
+    glass4 & 0.425 & 0.380 & 0.390 \\
+	& --- & --- & --- \\
+    \hline
+    glass6 & 0.779 & 0.787 & 0.809 \\
+	& --- & --- & --- \\
+    \hline
+    haberman & 0.352 & 0.445 & 0.427 \\
+	& --- & --- & ---\\
+    \hline
+    iris0 & 1.000 & 1.000 & 1.000\\
+	& --- & --- & --- \\
+    \hline
+    new-thyroid1 & 0.933 & 0.902 & 0.887 \\
+	& 2,3 & --- & --- \\
+    \hline
+    page-blocks-1-3\_vs\_4 & 0.701 & 0.479 & 0.479 \\
+	& 2,3 & --- & --- \\
+    \hline
+    pima & 0.483 & 0.654 & 0.656 \\
+	& --- & 1 & 1 \\
+    \hline
+    segment0 & 0.853 & 0.615 & 0.548 \\
+	& 2,3 & 3 & --- \\
+    \hline
+    vehicle0 & 0.641 & 0.563 &  0.600 \\
+	& --- & --- & --- \\
+    \hline
+    vehicle3 & 0.350 & 0.495 & 0.490  \\
+	& --- & 1 & 1 \\
+    \hline
+    vowel0 & 0.324 & 0.598 & 0.593 \\
+	& --- & 1 & 1 \\
+    \hline
+    winequality-red-4 & 0.084 & 0.110 & 0.110 \\
+	& --- & 1 & 1 \\
+    \hline
+    wisconsin & 0.840 & 0.945 & 0.959 \\
+	& --- & 1 & 1,2 \\
+    \hline
+    yeast-1-4-5-8\_vs\_7 & 0.069 & 0.091 & 0.091 \\
+	& --- & --- & --- \\
+    \hline
+    yeast3 & 0.228 & 0.247 & 0.236 \\
+	& --- & 3 & --- \\
+    \hline
+    yeast4 & 0.106 & 0.075 & 0.073 \\
+	& --- & --- & --- \\
+    \hline
+    yeast5 & 0.433 & 0.219 & 0.212 \\
+	& 2,3 & 3 & --- \\
+    \hline
+    \hline
+    średnia ranga & 1.75 & 2.3 & 1.95 \\
+    & --- & --- & --- \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{table}
+
+
+\begin{thebibliography}{99}
+\bibitem{def_klasyfikacja}
+M. Wozniak, (2014) Hybrid  Classifiers,  Methods  of  Data,  Knowledge,  and  ClassifierCombination. Springer-Verlag Berlin Heidelberg 
+\bibitem{def_niezbalansowana}
+Haibo He, \& Garcia, E. A. (2009). Learning from Imbalanced Data. IEEE Transactions on Knowledge and Data Engineering, 21(9), 1263–1284.
+\bibitem{ensemble}
+Opitz D. \& Maclin R, (1999) Popular Ensemble Methods: An Empirical Study. Journal of Artificial Intelligence Research 11  169-198.
+\bibitem{smote}
+N. V. Chawla, et al. (2002) SMOTE: Synthetic Minority Over-sampling Technique Journal Of Artificial Intelligence Research, Volume 16,321-357.
+\bibitem{scikit}
+Pedregosa et al. (2011), Scikit-learn: Machine Learning in Python, JMLR 12, pp. 2825-2830.
+\bibitem{f1}
+Chinchor, N. (1992). MUC-4 evaluation metrics. Proceedings of the 4th Conference on Message Understanding - MUC4 ’92.
+\bibitem{keel}
+J. Alcalá-Fdez, et al.(2011) KEEL Data-Mining Software Tool: Data Set Repository, Integration of Algorithms and Experimental Analysis Framework. Journal of Multiple-Valued Logic and Soft Computing 17:2-3  255-287
+\bibitem{atom}
+Atom https://atom.io/ [dostęp 31.02.2022]
+\bibitem{python3}
+Van Rossum, G., \& Drake, F. L. (2009). Python 3 Reference Manual. Scotts Valley, CA: CreateSpace.
+\bibitem{imblearn}
+Lemaitre G. et. al. (2017) Imbalanced-learn: A Python Toolbox to Tackle the Curse of Imbalanced Datasets in Machine Learning. Journal of Machine Learning Research, Volume 18, Number 17, 1-5
+\bibitem{scipy}
+Pauli Virtanen, et al. (2020) SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. Nature Methods, 17(3), 261-272.
+\bibitem{numpy}
+Harris, C.R., Millman, K.J., van der Walt, S.J. et al. Array programming with NumPy. Nature 585, 357–362 (2020). 
+\bibitem{pandas}
+Jeff Reback, et al. (2020). pandas-dev/pandas: Pandas 1.0.3 (Version v1.0.3). Zenodo.
+\bibitem{tabulate}
+Tabulate. Pretty-print tabular data in Python, a library and a command-line utility. https://github.com/astanin/python-tabulate [dostęp 31.02.2022]
+\end{thebibliography}
+
+\end{document}
