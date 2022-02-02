@@ -97,8 +97,8 @@ def calculate_global_wilcoxon_analysis(results, name):
 
     ranks = calculate_ranks(meanResults)
     mean_ranks = np.mean(ranks, axis=0)
-    # print("\nRanks:\n", ranks)
-    # print("\nMean ranks:\n", mean_ranks)
+    print("\nRanks:\n", ranks)
+    print("\nMean ranks:\n", mean_ranks)
 
     raw_w_statistic, raw_p_value = calculate_wilcoxon_test(ranks)
     # w_statistic, p_value = format_wilcoxon_test_tables(raw_w_statistic, raw_p_value, algos)
